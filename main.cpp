@@ -1,5 +1,9 @@
 #include <iostream>
+#include <string>
+#include <vector>
+#include <utility>
 #include "graph.hpp"
+#include "graphreader.hpp"
 
 void driver()
 {
@@ -18,8 +22,16 @@ void driver()
     gp.bfs("a");
 }
 
+void driverReader()
+{
+    std::string filename = "connlist.txt";
+    GraphReader rdr(filename);
+    Graph graph(rdr);
+    graph.printGraph();
+}
+
 int main()
 {
-    driver();
+    driverReader();
     return 0;
 }

@@ -4,16 +4,21 @@
 #include <string>
 #include <utility>
 #include <queue>
+#include <memory>
+
+#include "graphreader.hpp"
 
 struct Vertex
 {
     enum class Color { White, Grey, Black };
 
-    std::vector<std::pair<int, Vertex*>> m_adj {};
-    std::string m_name {};
+    std::vector<std::pair<int, Vertex*>> m_adj;
+    std::string m_name;
     Color m_color = Color::White;
 
-    Vertex() = default;
+    Vertex() 
+    { }
+
     virtual ~Vertex() 
     {
         for(auto it : m_adj)
@@ -29,9 +34,25 @@ struct Vertex
 class Graph 
 {
     public:
-        using Color = Vertex::Color;
-
         Graph() = default;
+
+        Graph(GraphReader& reader)
+        {
+            auto uniqueNodes = reader.getUniqueNodes();
+            for(auto node: uniqueNodes)
+            {
+                addVertex(node);
+            }
+
+            auto connList = reader.getConnectionList();
+            for(std::size_t i = 0; i < connList.size(); i++)
+            {   
+                for(std::size_t j = 0; j < connList[i].second.size(); j++)
+                {
+                    addEdge(connList[i].first, connList[i].second[j], -1);
+                }
+            }
+        }
 
         virtual ~Graph() { }
 
@@ -50,7 +71,7 @@ class Graph
                 std::cout << "No such vertex name = " << to << " in graph\nExiting...\n";
                 return;
             }
-            
+
             auto edge = std::make_pair(cost, itTo->second);
             itFrom->second->m_adj.push_back(edge);
         }
@@ -64,7 +85,7 @@ class Graph
                 std::cout << "Vertex with name = " << name << " already exists\n";
                 return;
             }
-            
+
             // Add vertex to @m_graph 
             Vertex *pVertex = new Vertex(name);
             m_graph[name] = pVertex;    
@@ -72,6 +93,8 @@ class Graph
 
         void bfs(const std::string& start)
         {
+            using Color = Vertex::Color;
+
             auto it = m_graph.find(start);
             if(it == m_graph.end())
             {
@@ -114,6 +137,19 @@ class Graph
         void visit(Vertex* pVertex) const 
         {   
             std::cout << "Visited vertex name = " << pVertex->m_name << '\n';
+        }
+
+        void printGraph() const
+        {
+            for(auto vertex: m_graph)
+            {
+                std::cout << vertex.first << ": ";
+                for(auto adjVertex: vertex.second->m_adj)
+                {
+                    std::cout << adjVertex.second->m_name << ' ';
+                }
+                std::cout << '\n';
+            }
         }
     private:
         std::map<std::string, Vertex*> m_graph{};
