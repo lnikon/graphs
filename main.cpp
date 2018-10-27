@@ -28,6 +28,8 @@ void driverReader()
     GraphReader rdr(filename);
     Graph graph(rdr);
     graph.printGraph();
+
+    graph.dfs("A");
 }
 
 int main()

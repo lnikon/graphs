@@ -5,6 +5,7 @@
 #include <utility>
 #include <queue>
 #include <memory>
+#include <iostream>
 
 #include "graphreader.hpp"
 
@@ -15,6 +16,7 @@ struct Vertex
     std::vector<std::pair<int, Vertex*>> m_adj;
     std::string m_name;
     Color m_color = Color::White;
+    std::size_t m_timestamp{0};
 
     Vertex() 
     { }
@@ -102,11 +104,8 @@ class Graph
                 return;
             }
 
-            // Make all vertexes colored to the White
-            for(auto it : m_graph)
-            {
-                it.second->m_color = Color::White;
-            }
+            makeAllWhite();
+            
 
             it->second->m_color = Color::Grey;
             std::queue<Vertex*> que;
@@ -131,7 +130,15 @@ class Graph
 
         void dfs(const std::string& start)
         {
-
+            makeAllWhite();
+            std::size_t time = 0;
+            for(auto& vertex: m_graph) 
+            {
+                if(vertex.second->m_color == Vertex::Color::White)
+                {
+                    dfsVisit(*(vertex.second), time);
+                }
+            }
         }
 
         void visit(Vertex* pVertex) const 
@@ -153,4 +160,30 @@ class Graph
         }
     private:
         std::map<std::string, Vertex*> m_graph{};
+
+        void dfsVisit(Vertex& vertex, std::size_t& time)
+        {
+            visit(&vertex);
+            ++time;
+            vertex.m_timestamp = time;
+            vertex.m_color = Vertex::Color::Grey;
+            for(auto& adjVertex: vertex.m_adj) 
+            {
+                if(adjVertex.second->m_color == Vertex::Color::White)
+                {
+                    dfsVisit(*(adjVertex.second), time);
+                }
+
+            }
+            vertex.m_color = Vertex::Color::Black;
+            ++time;
+        }
+
+        void makeAllWhite()
+        {
+            for(auto it : m_graph)
+            {
+                it.second->m_color = Vertex::Color::White;
+            }
+        }
 };
